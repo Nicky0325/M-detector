@@ -40,7 +40,7 @@ void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<Po
     pcl::PointCloud<PointType>::Ptr cloud_clean_ptr(new pcl::PointCloud<PointType>);
     cloud_clean_ptr = event_point.makeShared();
     bbox_t bbox_high;
-    ClusterAndTrack(dyn_tag, cloud_clean_ptr, pub_pcl_before_high, header, pub_pcl_after_high, cluster_vis_high, predict_path_high, bbox_high, delta_t, raw_point);
+    ClusterAndTrack(dyn_tag, cloud_clean_ptr, header, bbox_high, delta_t, raw_point);
     ros::Time t3 = ros::Time::now();
     time_total = (ros::Time::now() - t0).toSec();
     time_ind++;
@@ -48,15 +48,10 @@ void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<Po
     cur_frame += 1;
 }
 
-void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, ros::Publisher points_in_msg, std_msgs::Header header_in,\ 
-                    ros::Publisher points_out_msg,
-                                    ros::Publisher cluster_vis, ros::Publisher predict_path, bbox_t &bbox, double delta,
-                                    const pcl::PointCloud<PointType> &raw_point)
+void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, std_msgs::Header header_in,
+                                    bbox_t &bbox, double delta, const pcl::PointCloud<PointType> &raw_point)
 {
-    sensor_msgs::PointCloud2 pcl4_ros_msg;
-    pcl::toROSMsg(*points_in, pcl4_ros_msg);
-    pcl4_ros_msg.header.stamp = header_in.stamp;
-    pcl4_ros_msg.header.frame_id = header_in.frame_id;
+    (void)header_in;
     std::vector<pcl::PointIndices> cluster_indices;
     std::vector<std::vector<int>> voxel_clusters;
     ros::Time t0 = ros::Time::now();
@@ -108,8 +103,6 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
     int j = 0;
     pcl::PointCloud<PointType> cluster_points;
     pcl::PointCloud<PointType> true_ground;
-    visualization_msgs::MarkerArray numbers;
-    numbers.markers.reserve(200);
     cluster_points.reserve(raw_point.size());
     true_ground.reserve(raw_point.size());
     Eigen::Matrix3f R = odom_rot.cast<float>();

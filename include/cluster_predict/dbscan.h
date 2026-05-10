@@ -1,9 +1,6 @@
 #ifndef DBSCAN_H
 #define DBSCAN_H
 
-#include <ros/ros.h>
-#include <pcl_conversions/pcl_conversions.h>
-
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/voxel_grid.h>

@@ -6,7 +6,12 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-#define PI 3.141593
+#include <cmath>
+#include <vector>
+
+namespace ea_disk_detail {
+constexpr float kPi = 3.141593f;
+}
 
 class EA_disk
 {
@@ -39,20 +44,21 @@ public:
                 int num_of_this_ring = 8 * (i+1);
                 for (int j = 0; j < num_of_this_ring; j++)
                 {
-                    if (theta >= j * 1.0f / num_of_this_ring * 2 * PI && theta < (j+1) * 1.0f / num_of_this_ring * 2 * PI)
+                    if (theta >= j * 1.0f / num_of_this_ring * 2 * ea_disk_detail::kPi && theta < (j+1) * 1.0f / num_of_this_ring * 2 * ea_disk_detail::kPi)
                     {   
                         return offset + j;
                     }
                 }
             }
         }
+        return -1;
     }
 
     void CatesianToSphere(const Eigen::Vector3f xyz, Eigen::Vector2f &phitheta)
     {
         phitheta[0] = std::acos(xyz[2]);
         phitheta[1] = std::atan2(xyz[1], xyz[0]);
-        if (phitheta[1] < 0) phitheta[1] += 2 * PI;
+        if (phitheta[1] < 0) phitheta[1] += 2 * ea_disk_detail::kPi;
     }
 
     void SphereToDisk(const Eigen::Vector2f phitheta, Eigen::Vector2f &Rtheta)

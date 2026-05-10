@@ -4,37 +4,28 @@
 #include <omp.h>
 #include <mutex>
 #include <math.h>
-#include <ros/ros.h>
-// #include <so3_math.h>
 #include <Eigen/Core>
 #include <types.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
-#include <nav_msgs/Path.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/CompressedImage.h>
 #include <pcl/filters/voxel_grid.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <Eigen/LU>
 #include <m-detector/DynObjCluster.h>
+#include <m-detector/DynObjConfig.h>
+#include <offline/ros_compat.h>
 #include <parallel_q.h>
 #include <algorithm>
 #include <chrono>
+#include <deque>
 #include <execution>
 #include <mutex>
-#include <opencv2/opencv.hpp>
 #include <string>
-#include <opencv2/highgui.hpp>
-#include <opencv2/highgui/highgui.hpp>
-// #include <tinycolormap.hpp>
 
 
 using namespace std;
 using namespace Eigen;
-using namespace cv;
 
 /*** For dynamic object filtering ***/
 #define PI_MATH (3.141593f)
@@ -353,6 +344,8 @@ public:
     PointCloudXYZI::Ptr laserCloudDynObj_world;
     PointCloudXYZI::Ptr laserCloudDynObj_clus;
     PointCloudXYZI::Ptr laserCloudSteadObj_clus;
+    PointCloudXYZI::Ptr laserCloudDynObj_local_final;
+    PointCloudXYZI::Ptr laserCloudSteadObj_local_final;
     std::deque<PointCloudXYZI::Ptr> laserCloudSteadObj_accu;
     int laserCloudSteadObj_accu_times = 0;
     int laserCloudSteadObj_accu_limit = 5;
@@ -437,7 +430,7 @@ public:
     {};
     ~DynObjFilter(){};
 
-    void init(ros::NodeHandle& nh);
+    void init(const DynObjConfig& cfg);
     void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const double & scan_end_time);
     void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const double & scan_end_time);
     void set_path(string file_path, string file_path_origin);

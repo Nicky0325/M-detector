@@ -9,111 +9,111 @@
 #define PI_MATH  (3.14159f)
 
 
-void  DynObjFilter::init(ros::NodeHandle& nh)
+void  DynObjFilter::init(const DynObjConfig& cfg)
 {
-    nh.param<double>("dyn_obj/buffer_delay", buffer_delay, 0.1);
-    nh.param<int>("dyn_obj/buffer_size", buffer_size, 300000);
-    nh.param<int>("dyn_obj/points_num_perframe", points_num_perframe, 150000);
-    nh.param<double>("dyn_obj/depth_map_dur", depth_map_dur, 0.2);
-    nh.param<int>("dyn_obj/max_depth_map_num", max_depth_map_num, 5);
-    nh.param<int>("dyn_obj/max_pixel_points", max_pixel_points, 50);
-    nh.param<double>("dyn_obj/frame_dur", frame_dur, 0.1);
-    nh.param<int>("dyn_obj/dataset", dataset, 0);
-    nh.param<float>("dyn_obj/self_x_f", self_x_f, 0.15f);
-    nh.param<float>("dyn_obj/self_x_b", self_x_b, 0.15f);
-    nh.param<float>("dyn_obj/self_y_l", self_y_l, 0.15f);
-    nh.param<float>("dyn_obj/self_y_r", self_y_r, 0.5f);
-    nh.param<float>("dyn_obj/blind_dis", blind_dis, 0.15f);
-    nh.param<float>("dyn_obj/fov_up", fov_up, 0.15f);
-    nh.param<float>("dyn_obj/fov_down", fov_down, 0.15f);
-    nh.param<float>("dyn_obj/fov_cut", fov_cut, 0.15f);
-    nh.param<float>("dyn_obj/fov_left", fov_left, 180.0f);
-    nh.param<float>("dyn_obj/fov_right", fov_right, -180.0f);
-    nh.param<int>("dyn_obj/checkneighbor_range", checkneighbor_range, 1);
-    nh.param<bool>("dyn_obj/stop_object_detect", stop_object_detect, false);
-    nh.param<float>("dyn_obj/depth_thr1", depth_thr1, 0.15f);
-    nh.param<float>("dyn_obj/enter_min_thr1", enter_min_thr1, 0.15f);
-    nh.param<float>("dyn_obj/enter_max_thr1", enter_max_thr1, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr1", map_cons_depth_thr1, 0.5f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr1", map_cons_hor_thr1, 0.01f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr1", map_cons_ver_thr1, 0.01f);
-    nh.param<float>("dyn_obj/map_cons_hor_dis1", map_cons_hor_dis1, 0.2f);
-    nh.param<float>("dyn_obj/map_cons_ver_dis1", map_cons_ver_dis1, 0.1f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr1", depth_cons_depth_thr1, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr1", depth_cons_depth_max_thr1, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr1", depth_cons_hor_thr1, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr1", depth_cons_ver_thr1, 0.01f);
-    nh.param<float>("dyn_obj/enlarge_z_thr1", enlarge_z_thr1, 0.05f);
-    nh.param<float>("dyn_obj/enlarge_angle", enlarge_angle, 2.0f);
-    nh.param<float>("dyn_obj/enlarge_depth", enlarge_depth, 3.0f);
-    nh.param<int>("dyn_obj/occluded_map_thr1", occluded_map_thr1, 3);
-    nh.param<bool>("dyn_obj/case1_interp_en", case1_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_min_thr1", k_depth_min_thr1, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_min_thr1", d_depth_min_thr1, 0.15f);
-    nh.param<float>("dyn_obj/k_depth_max_thr1", k_depth_max_thr1, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr1", d_depth_max_thr1, 0.15f);
-    nh.param<float>("dyn_obj/v_min_thr2", v_min_thr2, 0.5f);
-    nh.param<float>("dyn_obj/acc_thr2", acc_thr2, 1.0f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr2", map_cons_depth_thr2, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr2", map_cons_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr2", map_cons_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/occ_depth_thr2", occ_depth_thr2, 0.15f);
-    nh.param<float>("dyn_obj/occ_hor_thr2", occ_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/occ_ver_thr2", occ_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr2", depth_cons_depth_thr2, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr2", depth_cons_depth_max_thr2, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr2", depth_cons_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr2", depth_cons_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/k_depth2", k_depth2, 0.005f);
-    nh.param<int>("dyn_obj/occluded_times_thr2", occluded_times_thr2, 3);
-    nh.param<bool>("dyn_obj/case2_interp_en", case2_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_max_thr2", k_depth_max_thr2, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr2", d_depth_max_thr2, 0.15f);
-    nh.param<float>("dyn_obj/v_min_thr3", v_min_thr3, 0.5f);
-    nh.param<float>("dyn_obj/acc_thr3", acc_thr3, 1.0f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr3", map_cons_depth_thr3, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr3", map_cons_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr3", map_cons_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/occ_depth_thr3", occ_depth_thr3, 0.15f);
-    nh.param<float>("dyn_obj/occ_hor_thr3", occ_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/occ_ver_thr3", occ_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr3", depth_cons_depth_thr3, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr3", depth_cons_depth_max_thr3, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr3", depth_cons_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr3", depth_cons_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/k_depth3", k_depth3, 0.005f);
-    nh.param<int>("dyn_obj/occluding_times_thr3", occluding_times_thr3, 3);
-    nh.param<bool>("dyn_obj/case3_interp_en", case3_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_max_thr3", k_depth_max_thr3, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr3", d_depth_max_thr3, 0.15f);
-    nh.param<float>("dyn_obj/interp_hor_thr", interp_hor_thr, 0.01f);
-    nh.param<float>("dyn_obj/interp_ver_thr", interp_ver_thr, 0.01f);
-    nh.param<float>("dyn_obj/interp_thr1", interp_thr1, 1.0f);
-    nh.param<float>("dyn_obj/interp_static_max", interp_static_max, 10.0f);
-    nh.param<float>("dyn_obj/interp_start_depth1", interp_start_depth1, 20.0f);
-    nh.param<float>("dyn_obj/interp_kp1", interp_kp1, 0.1f);
-    nh.param<float>("dyn_obj/interp_kd1", interp_kd1, 1.0f);
-    nh.param<float>("dyn_obj/interp_thr2", interp_thr2, 0.15f);
-    nh.param<float>("dyn_obj/interp_thr3", interp_thr3, 0.15f);
-    nh.param<bool>("dyn_obj/dyn_filter_en", dyn_filter_en, true);
-    nh.param<bool>("dyn_obj/debug_publish", debug_en, true);
-    nh.param<int>("dyn_obj/laserCloudSteadObj_accu_limit", laserCloudSteadObj_accu_limit, 5);
-    nh.param<float>("dyn_obj/voxel_filter_size", voxel_filter_size, 0.1f);
-    nh.param<bool>("dyn_obj/cluster_coupled", cluster_coupled, false);
-    nh.param<bool>("dyn_obj/cluster_future", cluster_future, false);
-    nh.param<int>("dyn_obj/cluster_extend_pixel", Cluster.cluster_extend_pixel, 2);
-    nh.param<int>("dyn_obj/cluster_min_pixel_number", Cluster.cluster_min_pixel_number, 4);
-    nh.param<float>("dyn_obj/cluster_thrustable_thresold", Cluster.thrustable_thresold, 0.3f);
-    nh.param<float>("dyn_obj/cluster_Voxel_revolusion", Cluster.Voxel_revolusion, 0.3f);
-    nh.param<bool>("dyn_obj/cluster_debug_en", Cluster.debug_en, false);
-    nh.param<string>("dyn_obj/cluster_out_file", Cluster.out_file, "");
-    nh.param<float>("dyn_obj/ver_resolution_max", hor_resolution_max, 0.0025f);
-    nh.param<float>("dyn_obj/hor_resolution_max", ver_resolution_max, 0.0025f);
-    nh.param<float>("dyn_obj/buffer_dur", buffer_dur, 0.1f);
-    nh.param<int>("dyn_obj/point_index", point_index, 0);
-    nh.param<string>("dyn_obj/frame_id", frame_id, "camera_init");
-    nh.param<string>("dyn_obj/time_file", time_file, "");
-    nh.param<string>("dyn_obj/time_breakdown_file",time_breakdown_file, "");
+    buffer_delay = cfg.buffer_delay;
+    buffer_size = cfg.buffer_size;
+    points_num_perframe = cfg.points_num_perframe;
+    depth_map_dur = cfg.depth_map_dur;
+    max_depth_map_num = cfg.max_depth_map_num;
+    max_pixel_points = cfg.max_pixel_points;
+    frame_dur = cfg.frame_dur;
+    dataset = cfg.dataset;
+    self_x_f = cfg.self_x_f;
+    self_x_b = cfg.self_x_b;
+    self_y_l = cfg.self_y_l;
+    self_y_r = cfg.self_y_r;
+    blind_dis = cfg.blind_dis;
+    fov_up = cfg.fov_up;
+    fov_down = cfg.fov_down;
+    fov_cut = cfg.fov_cut;
+    fov_left = cfg.fov_left;
+    fov_right = cfg.fov_right;
+    checkneighbor_range = cfg.checkneighbor_range;
+    stop_object_detect = cfg.stop_object_detect;
+    depth_thr1 = cfg.depth_thr1;
+    enter_min_thr1 = cfg.enter_min_thr1;
+    enter_max_thr1 = cfg.enter_max_thr1;
+    map_cons_depth_thr1 = cfg.map_cons_depth_thr1;
+    map_cons_hor_thr1 = cfg.map_cons_hor_thr1;
+    map_cons_ver_thr1 = cfg.map_cons_ver_thr1;
+    map_cons_hor_dis1 = cfg.map_cons_hor_dis1;
+    map_cons_ver_dis1 = cfg.map_cons_ver_dis1;
+    depth_cons_depth_thr1 = cfg.depth_cons_depth_thr1;
+    depth_cons_depth_max_thr1 = cfg.depth_cons_depth_max_thr1;
+    depth_cons_hor_thr1 = cfg.depth_cons_hor_thr1;
+    depth_cons_ver_thr1 = cfg.depth_cons_ver_thr1;
+    enlarge_z_thr1 = cfg.enlarge_z_thr1;
+    enlarge_angle = cfg.enlarge_angle;
+    enlarge_depth = cfg.enlarge_depth;
+    occluded_map_thr1 = cfg.occluded_map_thr1;
+    case1_interp_en = cfg.case1_interp_en;
+    k_depth_min_thr1 = cfg.k_depth_min_thr1;
+    d_depth_min_thr1 = cfg.d_depth_min_thr1;
+    k_depth_max_thr1 = cfg.k_depth_max_thr1;
+    d_depth_max_thr1 = cfg.d_depth_max_thr1;
+    v_min_thr2 = cfg.v_min_thr2;
+    acc_thr2 = cfg.acc_thr2;
+    map_cons_depth_thr2 = cfg.map_cons_depth_thr2;
+    map_cons_hor_thr2 = cfg.map_cons_hor_thr2;
+    map_cons_ver_thr2 = cfg.map_cons_ver_thr2;
+    occ_depth_thr2 = cfg.occ_depth_thr2;
+    occ_hor_thr2 = cfg.occ_hor_thr2;
+    occ_ver_thr2 = cfg.occ_ver_thr2;
+    depth_cons_depth_thr2 = cfg.depth_cons_depth_thr2;
+    depth_cons_depth_max_thr2 = cfg.depth_cons_depth_max_thr2;
+    depth_cons_hor_thr2 = cfg.depth_cons_hor_thr2;
+    depth_cons_ver_thr2 = cfg.depth_cons_ver_thr2;
+    k_depth2 = cfg.k_depth2;
+    occluded_times_thr2 = cfg.occluded_times_thr2;
+    case2_interp_en = cfg.case2_interp_en;
+    k_depth_max_thr2 = cfg.k_depth_max_thr2;
+    d_depth_max_thr2 = cfg.d_depth_max_thr2;
+    v_min_thr3 = cfg.v_min_thr3;
+    acc_thr3 = cfg.acc_thr3;
+    map_cons_depth_thr3 = cfg.map_cons_depth_thr3;
+    map_cons_hor_thr3 = cfg.map_cons_hor_thr3;
+    map_cons_ver_thr3 = cfg.map_cons_ver_thr3;
+    occ_depth_thr3 = cfg.occ_depth_thr3;
+    occ_hor_thr3 = cfg.occ_hor_thr3;
+    occ_ver_thr3 = cfg.occ_ver_thr3;
+    depth_cons_depth_thr3 = cfg.depth_cons_depth_thr3;
+    depth_cons_depth_max_thr3 = cfg.depth_cons_depth_max_thr3;
+    depth_cons_hor_thr3 = cfg.depth_cons_hor_thr3;
+    depth_cons_ver_thr3 = cfg.depth_cons_ver_thr3;
+    k_depth3 = cfg.k_depth3;
+    occluding_times_thr3 = cfg.occluding_times_thr3;
+    case3_interp_en = cfg.case3_interp_en;
+    k_depth_max_thr3 = cfg.k_depth_max_thr3;
+    d_depth_max_thr3 = cfg.d_depth_max_thr3;
+    interp_hor_thr = cfg.interp_hor_thr;
+    interp_ver_thr = cfg.interp_ver_thr;
+    interp_thr1 = cfg.interp_thr1;
+    interp_static_max = cfg.interp_static_max;
+    interp_start_depth1 = cfg.interp_start_depth1;
+    interp_kp1 = cfg.interp_kp1;
+    interp_kd1 = cfg.interp_kd1;
+    interp_thr2 = cfg.interp_thr2;
+    interp_thr3 = cfg.interp_thr3;
+    dyn_filter_en = cfg.dyn_filter_en;
+    debug_en = cfg.debug_publish;
+    laserCloudSteadObj_accu_limit = cfg.laserCloudSteadObj_accu_limit;
+    voxel_filter_size = cfg.voxel_filter_size;
+    cluster_coupled = cfg.cluster_coupled;
+    cluster_future = cfg.cluster_future;
+    Cluster.cluster_extend_pixel = cfg.cluster_extend_pixel;
+    Cluster.cluster_min_pixel_number = cfg.cluster_min_pixel_number;
+    Cluster.thrustable_thresold = cfg.cluster_thrustable_thresold;
+    Cluster.Voxel_revolusion = cfg.cluster_Voxel_revolusion;
+    Cluster.debug_en = cfg.cluster_debug_en;
+    Cluster.out_file = cfg.cluster_out_file;
+    ver_resolution_max = cfg.ver_resolution_max;
+    hor_resolution_max = cfg.hor_resolution_max;
+    buffer_dur = cfg.buffer_dur;
+    point_index = cfg.point_index;
+    frame_id = cfg.frame_id;
+    time_file = cfg.time_file;
+    time_breakdown_file = cfg.time_breakdown_file;
     max_ind   = floor(3.1415926 * 2 / hor_resolution_max);
     if (pcl_his_list.size() == 0)
     {   
@@ -124,6 +124,8 @@ void  DynObjFilter::init(ros::NodeHandle& nh)
         laserCloudSteadObj = PointCloudXYZI::Ptr(new PointCloudXYZI());
         laserCloudDynObj = PointCloudXYZI::Ptr(new PointCloudXYZI());
         laserCloudDynObj_world = PointCloudXYZI::Ptr(new PointCloudXYZI());
+        laserCloudDynObj_local_final = PointCloudXYZI::Ptr(new PointCloudXYZI());
+        laserCloudSteadObj_local_final = PointCloudXYZI::Ptr(new PointCloudXYZI());
         int xy_ind[3] = {-1, 1};
         for (int ind_hor = 0; ind_hor < 2*hor_num + 1; ind_hor ++)
         {
@@ -203,6 +205,10 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
     laserCloudDynObj_clus->reserve(size);
     laserCloudSteadObj_clus.reset(new PointCloudXYZI());
     laserCloudSteadObj_clus->reserve(size); 
+    laserCloudDynObj_local_final.reset(new PointCloudXYZI());
+    laserCloudDynObj_local_final->reserve(size);
+    laserCloudSteadObj_local_final.reset(new PointCloudXYZI());
+    laserCloudSteadObj_local_final->reserve(size);
     ofstream out;
     ofstream out_origin;
     bool is_rec = false;
@@ -325,19 +331,23 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                 po.normal_x = 1;
                 laserCloudDynObj->push_back(po);
                 laserCloudDynObj_world->push_back(po_w);
+                if (!(cluster_coupled || cluster_future)) laserCloudDynObj_local_final->push_back(po);
                 break;
             case CASE2:
                 po.normal_y = points[i]->occu_times;
                 laserCloudDynObj->push_back(po);
                 laserCloudDynObj_world->push_back(po_w);
+                if (!(cluster_coupled || cluster_future)) laserCloudDynObj_local_final->push_back(po);
                 break;
             case CASE3:
                 po.normal_z = points[i]->is_occu_times;
                 laserCloudDynObj->push_back(po);
                 laserCloudDynObj_world->push_back(po_w);
+                if (!(cluster_coupled || cluster_future)) laserCloudDynObj_local_final->push_back(po);
                 break;
             default:
                 laserCloudSteadObj->push_back(po_w);
+                if (!(cluster_coupled || cluster_future)) laserCloudSteadObj_local_final->push_back(po);
         }
     }
 	int num_1 = 0, num_2 = 0, num_3 = 0, num_inval = 0, num_neag = 0; 
@@ -355,6 +365,13 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
             po.y = points[i]->glob(1);
             po.z = points[i]->glob(2);
             po.curvature = i;
+            auto localPoint = [&](const PointType& world_point) {
+                PointType local = world_point;
+                local.x = points[i]->local(0);
+                local.y = points[i]->local(1);
+                local.z = points[i]->local(2);
+                return local;
+            };
             switch (points[i]->dyn)
             {   
                 case CASE1:               
@@ -368,6 +385,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_z = points[i]->occu_times;
                         po.intensity = (int) (points[i]->local.norm() * 10) + 10;
                         laserCloudSteadObj_clus->push_back(po);
+                        laserCloudSteadObj_local_final->push_back(localPoint(po));
                         num_neag += 1;
                     }
                     else // case1
@@ -376,6 +394,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_y = points[i]->is_occu_times;
                         po.normal_z = points[i]->occu_times;
                         laserCloudDynObj_clus->push_back(po);
+                        laserCloudDynObj_local_final->push_back(localPoint(po));
                         if(!dyn_filter_en)
                         {
                             po.intensity = (int) (points[i]->local.norm() * 10) + 10;
@@ -394,6 +413,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_z = points[i]->occu_times;
                         po.intensity = (int) (points[i]->local.norm() * 10) + 10;
                         laserCloudSteadObj_clus->push_back(po);
+                        laserCloudSteadObj_local_final->push_back(localPoint(po));
                         num_neag += 1;
                     }
                     else
@@ -402,6 +422,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_y = points[i]->is_occu_times;
                         po.normal_z = points[i]->occu_times;
                         laserCloudDynObj_clus->push_back(po);
+                        laserCloudDynObj_local_final->push_back(localPoint(po));
                         if(!dyn_filter_en)
                         {
                             po.intensity = (int) (points[i]->local.norm() * 10) + 10;
@@ -420,6 +441,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_z = points[i]->occu_times;
                         po.intensity = (int) (points[i]->local.norm() * 10) + 10;
                         laserCloudSteadObj_clus->push_back(po);
+                        laserCloudSteadObj_local_final->push_back(localPoint(po));
                         num_neag += 1;
                     }
                     else
@@ -428,6 +450,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_y = points[i]->is_occu_times;
                         po.normal_z = points[i]->occu_times;
                         laserCloudDynObj_clus->push_back(po);
+                        laserCloudDynObj_local_final->push_back(localPoint(po));
                         if(!dyn_filter_en)
                         {
                             po.intensity = (int) (points[i]->local.norm() * 10) + 10;
@@ -445,6 +468,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_y = points[i]->is_occu_times;
                         po.normal_z = points[i]->occu_times;
                         laserCloudDynObj_clus->push_back(po);
+                        laserCloudDynObj_local_final->push_back(localPoint(po));
                         if(!dyn_filter_en)
                         {
                             po.intensity = (int) (points[i]->local.norm() * 10) + 10;
@@ -458,6 +482,7 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
                         po.normal_z = points[i]->occu_times;
                         po.intensity = (int) (points[i]->local.norm() * 10) + 10;
                         laserCloudSteadObj_clus->push_back(po);
+                        laserCloudSteadObj_local_final->push_back(localPoint(po));
                         num_neag += 1;
                     }
                     break;               
@@ -1820,6 +1845,11 @@ bool  DynObjFilter::Case3DepthConsistencyCheck(const point_soph & p, const Depth
 
 void DynObjFilter::publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const double & scan_end_time)
 {
+    (void)pub_point_out;
+    (void)pub_frame_out;
+    (void)pub_steady_points;
+    (void)scan_end_time;
+
     if(cluster_coupled) // pubLaserCloudEffect pub_pcl_dyn_extend  pubLaserCloudEffect_depth
     {    
         cout<<"Found Dynamic Objects, numbers: " << laserCloudDynObj_clus->points.size() << " Total time: " << time_total << " Average total time: "<< time_total_avr << endl;
@@ -1832,20 +1862,7 @@ void DynObjFilter::publish_dyn(const ros::Publisher & pub_point_out, const ros::
     case1_num = 0;
     case2_num = 0;
     case3_num = 0;
-    sensor_msgs::PointCloud2 laserCloudFullRes3;
-    pcl::toROSMsg(*laserCloudDynObj_world, laserCloudFullRes3);
-    laserCloudFullRes3.header.stamp = ros::Time().fromSec(scan_end_time);
-    laserCloudFullRes3.header.frame_id = frame_id;
-    pub_point_out.publish(laserCloudFullRes3);
-    if(cluster_coupled || cluster_future)
-    {
-        sensor_msgs::PointCloud2 laserCloudFullRes4;
-        pcl::toROSMsg(*laserCloudDynObj_clus, laserCloudFullRes4);
-        laserCloudFullRes4.header.stamp = ros::Time().fromSec(scan_end_time);
-        laserCloudFullRes4.header.frame_id = frame_id;
-        pub_frame_out.publish(laserCloudFullRes4);
-    }
-    sensor_msgs::PointCloud2 laserCloudFullRes2;
+
     PointCloudXYZI::Ptr laserCloudSteadObj_pub(new PointCloudXYZI);
     if(cluster_coupled)
     {
@@ -1872,7 +1889,6 @@ void DynObjFilter::publish_dyn(const ros::Publisher & pub_point_out, const ros::
         downSizeFiltermap.setInputCloud(laserCloudSteadObj_pub);
         PointCloudXYZI laserCloudSteadObj_down;
         downSizeFiltermap.filter(laserCloudSteadObj_down);
-        pcl::toROSMsg(laserCloudSteadObj_down, laserCloudFullRes2);
     }
     else
     {
@@ -1895,11 +1911,7 @@ void DynObjFilter::publish_dyn(const ros::Publisher & pub_point_out, const ros::
                 *laserCloudSteadObj_pub += *laserCloudSteadObj_accu[i];
             }
         }
-        pcl::toROSMsg(*laserCloudSteadObj_pub, laserCloudFullRes2);
     }
-    laserCloudFullRes2.header.stamp = ros::Time().fromSec(scan_end_time);
-    laserCloudFullRes2.header.frame_id = frame_id;
-    pub_steady_points.publish(laserCloudFullRes2);
 }
 
 void DynObjFilter::set_path(string file_path, string file_path_origin)
@@ -1908,4 +1920,3 @@ void DynObjFilter::set_path(string file_path, string file_path_origin)
     out_file = file_path;
     out_file_origin = file_path_origin;
 }
-

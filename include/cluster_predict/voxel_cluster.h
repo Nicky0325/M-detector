@@ -1,7 +1,6 @@
 #ifndef VOXEL_CLUSTER_H
 #define VOXEL_CLUSTER_H
 
-#include <ros/ros.h>
 #include <Eigen/Core>
 #include <unordered_map>
 #include <unordered_set>
