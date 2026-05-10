@@ -1,184 +1,245 @@
-# M-detector
+# M-detector Offline Prototype
 
-## 1.Introduction
+This repository packages the M-detector moving object detector as a standalone
+offline CMake project. It processes sequential lidar PCD folders, estimates a
+local lidar pose with `direct_lidar_odometry`, segments dynamic and static
+points, and writes per-frame plus merged PCD outputs for visualization.
 
-**M-detector** is a moving event detection package, which determines if a point from LiDAR is moving immediately after its arrival, resulting in a point-by-point detection with a latency of just several microseconds. M-detector is designed based on occlusion principles and can be used in different environments with various types of LiDAR sensors.
+The original M-detector paper is:
 
-### **1.1 Related paper**
+> Moving Event Detection from LiDAR Stream Points, Nature Communications, 2024.
 
-Our related papers has been accepted by Nature Communications. [Moving Event Detection from LiDAR Stream Points](https://www.nature.com/articles/s41467-023-44554-8).
+This prototype intentionally does not require ROS, catkin, Livox drivers,
+Fast-LIO, or a manually installed oneTBB tree.
 
-If our code is used in your project, please cite our paper.
+## Repository Layout
 
-### **1.2 Related video**
-
-Our accompanying videos are now available on **YouTube** (click below images to open) and [**Bilibili**](https://www.bilibili.com/video/BV1ke411i7t7/?share_source=copy_web).
-
-<div align="center">
-<a href="https://www.youtube.com/watch?v=SYaig2eHV5I" target="_blank"><img src="img/cover.bmp" alt="video" width="60%" /></a>
-</div>
-
-### 1.3 Developers
-
-The codes of this repo are contributed by:
-[Huajie Wu (吴花洁)](https://github.com/HuajieWu99), [Yihang Li (李一航)](https://github.com/yihangHKU) and [Wei Xu (徐威)](https://github.com/XW-HKU)
-
-## 2. Prerequisites
-
-### 2.1 **Ubuntu** and **ROS**
-
-Ubuntu ≥ 18.04.
-
-ROS     ≥ Melodic. Follow [[ROS Installation](http://wiki.ros.org/ROS/Installation)]
-
-### 2.2 **PCL** and **Eigen**
-
-PCL      ≥ 1.8
-
-`sudo apt install libpcl-dev`
-
-Eigen    ≥ 3.3.4
-
-`sudo apt install libeigen3-dev`
-
-### 2.3 **livox_ros_driver**
-
-Follow [livox_ros_driver Installation](https://github.com/Livox-SDK/livox_ros_driver).
-
-*Remarks:*
-
-* Since the M-detector support Livox serials LiDAR firstly, so the **livox_ros_driver** must be installed and **sourced** before run any M-detector launch file.
-* How to source? The easiest way is add the line `source $Livox_ros_driver_dir$/devel/setup.bash` to the end of file `~/.bashrc`, where `$Livox_ros_driver_dir$` is the directory of the livox ros driver workspace (should be the `ws_livox` directory if you completely followed the livox official document).
-
-### 2.4 TBB
-
-Install gcc-9 g++-9
-
-`sudo add-apt-repository ppa:ubuntu-toolchain-r/test`
-
-`sudo apt update`
-
-`sudo apt install gcc-9 g++-9`
-
-`cd /usr/bin`
-
-`sudo rm gcc g++`
-
-`sudo ln -s gcc-9  gcc`
-
-`sudo ln -s g++-9 g++`
-
-Follow [[TBB Installation](https://solarianprogrammer.com/2019/05/09/cpp-17-stl-parallel-algorithms-gcc-intel-tbb-linux-macos/)] (**Note:** change the gcc-9.1/g++-9.1 to gcc-9/g++-9)
-
-Change the TBB path (line 51-52) in CMakeLists.txt
-## 3. Build
-
-Clone the repository and catkin_make:
-
-`cd ~/catkin_ws/src`
-
-`git clone git@github.com:hku-mars/M-detector.git`
-
-`catkin_make`
-
-`source devel/setup.bash`
-(**Note:** change the path for TBB in CMakeList.txt)
-
-## 4. Key Information
-
-### 4.1 Key parameters
-
-```
-points_topic: "/cloud_registered_body"  #the topic name of local point cloud
-odom_topic: "/aft_mapped_to_init"       #the topic name of odometry
-dataset: 3                              #0 for kitti, 1 for nuscenes, 2 for waymo
-buffer_delay: 0.1                       #the delay duration between the frame-out output and depth map construction
-buffer_size: 100000                     #the saved maximum point numbers in the buffer, usually larger than the point numbers generated during buffer_delay
-points_num_perframe: 30000              #the maximum point numbers LiDAR generated per frame
-depth_map_dur: 0.2                      #the effective durtaion of every depth map 
-max_depth_map_num: 5                    #the maximum depth map numbers in the configuration 
-max_pixel_points: 5                     #the saved maximum point numbers in each pixel of the depth map
-frame_dur: 0.1                          #the frame duration of the point cloud input by points_topic
-hor_resolution_max: 0.005               #the horizontal resolution of the depth map (units in radius), usually is 2-4 times of the horizontal resolution of LiDAR
-ver_resolution_max: 0.01                #the vertical resolution of the depth map (units in radius),  usually is 2-4 times of the horizontal resolution of LiDAR
-fov_up: 52                              #the maximum value of the vertical FOV of LiDAR
-fov_down: -7                            #the minimum value of the vertical FOV of LiDAR
-fov_left: 180.0                         #the maximum value of the horizontal FOV of LiDAR
-fov_right: -180.0                       #the minimum value of the horizontal FOV of LiDAR
-occluded_map_thr1:3                     #the minimum occlusion times for test 1
-map_cons_hor_thr1: 0.05                 #the horizontal neighborhood size for occlusion check in the step of map consistency for test 1
-map_cons_ver_thr1: 0.05                 #the vertical neighborhood size for occlusion check in the step of map consistency for test 1
-cluster_coupled:true                    #whether output the frame-out results
-cluster_future:true                     #whether utilize the frame-out results during depth map construction
+```text
+.
+  CMakeLists.txt
+  .devcontainer/
+  config/offline/aiv_at128.yaml
+  direct_lidar_odometry/        # Git submodule: upstream lidar odometry
+  include/
+  src/
+  tests/
+  data/                         # local datasets, ignored by git
+  output/                       # generated results, ignored by git
 ```
 
-The parameters are provided in folder "config" for different LiDARs.
+`direct_lidar_odometry` is tracked as a git submodule at
+`https://github.com/Nicky0325/direct_lidar_odometry.git`. Keep it clean against
+its upstream unless you are deliberately updating the submodule pointer.
 
-For methods of parameters tuning, please follow the section 8 introduced in [[Supplementary Information](https://www.nature.com/articles/s41467-023-44554-8)].
+## Clone And Update
 
-To save the label files, please pass the parameter via the corresponding launch files.
+Fresh clone:
 
-### 4.2 Folder structure for dataset
-
-```
-├── XXX (dataset name)
-│   ├── bags
-│   │   ├── XXX_0000.bag
-│   │   ├── ...
-│   ├── sequences
-│   │   ├── 0000
-│   │   │   ├── labels
-│   │   │   ├── predictionsx_origin (results in point-out mode with xth parameter file)
-│   │   │   ├── predictionsx (in frame-out mode with xth parameter file)
-│   │   │   ├── ...
-│   │   ├── ...
-├── ...
+```bash
+git clone --recurse-submodules <this-repository-url>
+cd M-detector
 ```
 
-The dataset can be downloaded at [[this link](https://drive.google.com/drive/folders/1ASNfrjZB7n9Q-nB4Pm2IwvArFWnTcFAj?usp=drive_link)].
+Existing clone:
 
-## 5. Directly Run
+```bash
+git submodule update --init --recursive
+```
 
-### 5.1 Run with odometry and point clouds (in local frame)
+When pulling later:
 
-At first, please run a odometery node, such as [[Fast Lio](https://github.com/hku-mars/FAST_LIO)] (Download Fast Lio provided in Releases into the same location as M-detector's and complie them).
+```bash
+git pull --recurse-submodules
+git submodule update --init --recursive
+```
 
-Then:
+Optional convenience:
 
-`roslaunch fast_lio mapping_XXX(for dataset).launch`
+```bash
+git config submodule.recurse true
+```
 
-`roslaunch m_detector detector_(dataset).launch`
+To verify that the odometry module is still an upstream-clean checkout:
 
-`rosbag play YOURBAG.bag`
+```bash
+git -C direct_lidar_odometry status --short --branch
+git -C direct_lidar_odometry diff --stat origin/master
+```
 
-### 5.2 Generate the label files for every point
+## Dependencies
 
-`roslaunch m_detector detector_XXX.launch out_path:="your path for frame-out results" out_origin_path:="your path for point-out results"`
+Use the devcontainer, or any Ubuntu 22.04 environment with:
 
-Note: Follow the folder structure introduced before, the `out_path` should be in the format of "(the path to dataset folder)/(dataset name)/sequences/(sequence number)/predictionsx(x is the parameter file's number)/", and the `out_origin_path` should be in the format of "(the path to dataset folder)/(dataset name)/sequences/(sequence number)/predictionsx_origin(x is the parameter file's number)/".
+- CMake 3.16+
+- Ninja
+- C++17 compiler
+- Eigen3
+- PCL
+- Boost filesystem/system
+- yaml-cpp
+- OpenMP
+- TBB from the distro package, for example `libtbb-dev`
 
-### 5.3 Calculate the IoU of results
+No ROS environment is required.
 
-`roslaunch m_detector cal_recall.launch dataset:=(0 for kitti, 1 for nuscenes, 2 for waymo, 3 for avia) dataset_folder:="the path to the dataset_folder" start_se:=(the first sequence number for calculation) end_se:=(the last sequence number for calculation) start_param:=(the first parameter file's number for calculation) end_param:=(the last parameter file's number for calculation) is_origin:=(true for point-out results, false for frame-out results)`
+## Devcontainer
 
-Note: Follow the folder structure introduced before, the `dataset_folder` should be the path to dataset folder. This step will calculate all the IoU for all designated results listed in the dataset folder and generate a new folder named "recall" or "recall_origin" containing the results.
+The devcontainer uses the multi-arch `ubuntu:22.04` image, so it builds natively
+on Apple Silicon Docker Desktop. It installs only standalone C++ dependencies
+and uses distro `libtbb-dev`.
 
-## 6. Run with Embedded in FAST LIO
+With VS Code or another Dev Containers compatible tool, open the repository and
+choose **Reopen in Container**. After the container starts:
 
-Download the embedded version provided in Releases into a new workspace and complie them.
+```bash
+git submodule update --init --recursive
+cmake -S . -B build -G Ninja
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
 
-`roslaunch fast_lio mapping_(dataset).launch`
+Docker CLI equivalent:
 
-`rosbag play YOURBAG.bag`
+```bash
+docker build -t m-detector-offline -f .devcontainer/Dockerfile .
+docker run --rm -it \
+  -v "$PWD":/workspaces/M-detector \
+  -w /workspaces/M-detector \
+  m-detector-offline bash
+```
 
-## 7. Rosbag Download
+Then run the same `git submodule`, `cmake`, `cmake --build`, and `ctest`
+commands inside the container.
 
-The bags used in paper can be download at [[this link](https://drive.google.com/drive/folders/1ASNfrjZB7n9Q-nB4Pm2IwvArFWnTcFAj?usp=sharing)].
+## Build
 
+```bash
+git submodule update --init --recursive
+cmake -S . -B build -G Ninja
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
 
+The build produces:
 
-## 8. License
+```text
+build/m_detector_offline
+```
 
-The source code of this package is released under [**GPLv2**](http://www.gnu.org/licenses/) license. We only allow it free for **academic usage**. For commercial use, please contact Dr. Fu Zhang [fuzhang@hku.hk](mailto:fuzhang@hku.hk).
+## Dataset Format
 
-For any technical issues, please contact me via email [wu2020@connect.hku.hk](mailto:wu2020@connect.hku.hk).
+The offline runner expects one sequence directory with lidar folders under
+`lidar/`:
+
+```text
+data/<sequence_name>/
+  lidar/
+    lidar_frf_at128/
+      1776745760.800996.pcd
+      1776745760.900821.pcd
+      ...
+    lidar_blb_at128/
+      1776745760.800996.pcd
+      1776745760.900821.pcd
+      ...
+  calibration/                  # optional for this prototype
+  camera/                       # optional for this prototype
+  vehicle_pose/                 # optional for this prototype
+```
+
+Only the selected lidar PCD folders are consumed. PCD files must be readable by
+PCL as `pcl::PointXYZI`; `x`, `y`, `z`, and `intensity` fields are recommended.
+The runner sorts frames numerically by the timestamp in each PCD filename stem.
+
+The sample workspace used during development contains:
+
+```text
+data/5073_sequential/lidar/lidar_frf_at128
+data/5073_sequential/lidar/lidar_blb_at128
+```
+
+## Run
+
+Process the recommended AT128 lidars independently:
+
+```bash
+./build/m_detector_offline \
+  --data data/5073_sequential \
+  --lidars lidar_frf_at128,lidar_blb_at128 \
+  --config config/offline/aiv_at128.yaml \
+  --output output/5073_sequential
+```
+
+Quick smoke run:
+
+```bash
+./build/m_detector_offline \
+  --data data/5073_sequential \
+  --lidars lidar_frf_at128 \
+  --config config/offline/aiv_at128.yaml \
+  --output /tmp/mdetector_smoke \
+  --max-frames 5
+```
+
+CLI options:
+
+```text
+--data <sequence_dir>       Sequence root containing lidar/<lidar_name> folders.
+--lidars <a,b,c>            Comma-separated lidar folder names.
+--config <yaml>             Detector config, default config/offline/aiv_at128.yaml.
+--output <dir>              Output root.
+--max-frames <N>            Optional frame limit for smoke tests.
+--help                      Print usage.
+```
+
+## Output
+
+Each lidar gets its own output tree:
+
+```text
+output/<sequence>/<lidar_name>/
+  odometry/
+    local_pose.txt
+    local_map_keyframes.pcd
+  dynamic_frames/
+    <timestamp>.pcd
+  static_frames/
+    <timestamp>.pcd
+  dynamic_object_transformed/
+    <timestamp>.pcd
+    merged.pcd
+  static_object_transformed/
+    <timestamp>.pcd
+    merged.pcd
+  dynamic_merged.pcd
+  summary.csv
+```
+
+`dynamic_frames` and `static_frames` contain the detector's per-frame outputs.
+The `*_object_transformed` folders contain final segmented points transformed by
+the lidar odometry pose; each folder also includes a concatenated `merged.pcd`
+for easier visualization in tools such as CloudCompare or PCL viewers.
+
+`summary.csv` contains one row per processed frame:
+
+```text
+frame_id,file_name,timestamp,input_points,dynamic_points,static_points,tx,ty,tz,qx,qy,qz,qw,total_time_sec
+```
+
+`odometry/local_pose.txt` stores the local pose used for each frame.
+
+## Development Notes
+
+- `lidar_frf_at128` and `lidar_blb_at128` are processed as independent
+  sequences, not fused.
+- Detector parameters live in `config/offline/aiv_at128.yaml`.
+- The M-detector core is initialized from YAML rather than ROS parameters.
+- Prefer parent-project wrappers or adapters over local edits inside
+  `direct_lidar_odometry`.
+- Keep build artifacts, datasets, generated outputs, and local paper PDFs out of
+  git.
+
+## License
+
+The original source code is released under the GPLv2 license for academic usage.
+For commercial use, contact the original authors.
